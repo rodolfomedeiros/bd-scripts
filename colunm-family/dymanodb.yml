@@ -1,0 +1,92 @@
+## Banco de dados Amazon/DynamoDB
+
+## ACESSANDO O BANCO LOCALMENTE VIA AWS CLI (--endpoint-url http://localhost:8000)
+
+## CREATE
+
+# utilizando chave primaria e chave de classificacao
+aws dynamodb create-table \
+    --table-name musicas \
+    --attribute-definitions \
+        AttributeName=artista,AttributeType=S \
+        AttributeName=nome,AttributeType=S \
+    --key-schema \
+        AttributeName=artista,KeyType=HASH \
+        AttributeName=nome,KeyType=RANGE \
+    --provisioned-throughput \
+        ReadCapacityUnits=1,WriteCapacityUnits=1 \
+    --endpoint-url http://localhost:8000
+
+## DESCRIBE
+
+aws dynamodb describe-table --table-name musicas --endpoint-url http://localhost:8000
+
+## INSERT
+
+# insert musica 1
+aws dynamodb put-item \
+    --table-name musicas \
+    --item file://data/m1.json \
+    --endpoint-url http://localhost:8000
+
+# insert musica 2
+aws dynamodb put-item \
+    --table-name musicas \
+    --item file://data/m2.json \
+    --endpoint-url http://localhost:8000
+
+# insert musica 3
+aws dynamodb put-item \
+    --table-name musicas \
+    --item file://data/m3.json \
+    --endpoint-url http://localhost:8000
+
+## SELECT
+
+# all tables
+aws dynamodb list-tables --endpoint-url http://localhost:8000
+
+# select todas as musicas
+aws dynamodb batch-get-item \
+    --request-items file://data/all.json \
+    --endpoint-url http://localhost:8000
+
+# select por artista
+# com getItem (chave primaria e chave de classificacao)
+aws dynamodb get-item \
+    --table-name musicas \
+    --key '{"artista":{"S":"Days Of The New"}, "nome":{"S":"Dirty Road"}}' \
+    --endpoint-url http://localhost:8000
+
+# com query (chave primaria)
+aws dynamodb query \
+    --table-name musicas \
+    --key-condition-expression "artista = :a" \
+    --expression-attribute-values '{":a":{"S":"Days Of The New"}}' \
+    --endpoint-url http://localhost:8000
+
+## UPDATE
+
+aws dynamodb update-item \
+    --table-name musicas \
+    --key file://data/m2.json \
+    --update-expression "SET album = :a, genero = :g" \
+    --expression-attribute-values '{":a": {"S": "Only Be The Night"}, ":g": {"S": "Rock"}}' \
+    --return-values ALL_NEW \
+    --endpoint-url http://localhost:8000
+
+## DELETE
+
+# delete by artista e nome (chave primaria e chave de classificacao)
+aws dynamodb delete-item \
+    --table-name musicas \
+    --key file://data/m2.json \
+    --return-values ALL_OLD \
+    --endpoint-url http://localhost:8000
+
+#  delete table musicas
+aws dynamodb delete-table --table-name musicas --endpoint-url http://localhost:8000
+
+
+
+

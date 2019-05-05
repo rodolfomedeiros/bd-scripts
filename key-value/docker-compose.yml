@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  rcli:
+    container_name: redis
+    image: redis
+    command: redis-cli -h redis

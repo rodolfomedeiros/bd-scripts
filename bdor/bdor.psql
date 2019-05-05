@@ -1,0 +1,228 @@
+-- Creates
+
+-- database
+
+create database bdor
+    with 
+    owner = postgres
+    encoding = 'UTF8'
+    connection limit = -1;
+
+-- types
+
+create type phone as (
+    ddd varchar(255),
+    numero varchar(255)
+);
+
+create type address as (
+    rua varchar(255),
+    numero varchar(255),
+    referencia varchar(255),
+    bairro varchar(255),
+    cidade varchar(255),
+    estado varchar(2),
+    cep varchar(8)
+);
+
+CREATE TYPE item as (
+    id_product bigint,
+    quantidade integer
+);
+
+create type nivel as ENUM ('low', 'middle', 'high');
+
+create type categories as ENUM (
+    'higiene pessoal',
+    'frutas',
+    'limpeza',
+    'legumes',
+    'frios',
+    'bebidas'
+);
+
+-- tables
+
+create table users (
+    id bigserial PRIMARY KEY,
+    email varchar(255) UNIQUE NOT NULL,
+    password varchar(255) NOT NULL,
+    nivel nivel NOT NULL,
+    nome varchar(255) NOT NULL,
+    telefone phone NOT NULL,
+    endereco address NOT NULL
+);
+
+create table persons (
+    id bigint PRIMARY KEY,
+    cpf varchar(11) UNIQUE NOT NULL
+) INHERITS ( users );
+
+create table companies (
+    cnpj varchar(14) UNIQUE NOT NULL
+) INHERITS ( users );
+
+CREATE TABLE supermarkets (
+    id bigserial PRIMARY KEY,
+    nome varchar(255) UNIQUE NOT NULL,
+    telefone phone NOT NULL,
+    endereco address NOT NULL
+);
+
+CREATE TABLE products (
+    id bigserial PRIMARY KEY,
+    nome varchar(255) UNIQUE NOT NULL,
+    marca varchar(255) NOT NULL,
+    categoria categories NOT NULL,
+    descricao TEXT
+);
+
+CREATE TABLE stocks (
+    id bigserial,
+    id_product bigint,
+    id_supermarket bigint,
+    preco decimal NOT NULL,
+    quantidade integer DEFAULT(0),
+    PRIMARY KEY (id, id_product, id_supermarket),
+    FOREIGN KEY (id_product) REFERENCES products(id),
+    FOREIGN KEY (id_supermarket) REFERENCES supermarkets(id)
+);
+
+CREATE TABLE list_products (
+    id bigserial,
+    id_person bigint,
+    id_supermarket bigint,
+    items item[],
+    PRIMARY KEY (id, id_person, id_supermarket),
+    FOREIGN KEY (id_person) REFERENCES persons(id),
+    FOREIGN KEY (id_supermarket) REFERENCES supermarkets(id)
+);
+
+------------------------------------------------------------------
+
+-- inserts
+
+-- users admin
+
+INSERT INTO users(email, password, nivel, nome, telefone, endereco) 
+    VALUES ('admin@sextao.app', 'sextao', 'high',
+            'Sextao CEO',
+            ('84', '99999-1111'),
+            ('rua', '000', 'referencia', 'Centro', 'Assu', 'RN', '59650000'));
+
+-- persons
+
+INSERT INTO persons(email, password, nivel, nome, telefone, endereco, cpf) 
+    VALUES ('teste@gmail.com', '123', 'low',
+            'Fulano',
+            ('84', '98888-1111'),
+            ('rua', '000', 'referencia', 'Santa Delmira','Mossoro', 'RN', '59650000'),
+            '01234567891');
+
+-- companies
+
+INSERT INTO companies(email, password, nivel, nome, telefone, endereco, cnpj) 
+    VALUES ('company@foods.com', '123', 'middle',
+            'Foods Company',
+            ('84', '3331-3434'),
+            ('rua', '000', 'referencia', 'Tirol', 'Natal', 'RN', '59650000'),
+            '12435142378453');
+
+-- supermarkets
+
+INSERT INTO supermarkets(nome, telefone, endereco)
+	VALUES  ('Queiroz - São João',
+            ('84', '3331-1526'),
+            ('Rua São João', '001', 'Em frente ao Lava jato', 'Centro', 'Assu', 'RN', '59650000'));
+
+-- products
+
+INSERT INTO products(nome, marca, categoria, descricao)
+	VALUES ('Maminha', 'Friboi' ,'frios', 'Carne para churrasco');
+
+INSERT INTO products(nome, marca, categoria, descricao)
+	VALUES ('Shampoo', 'Elsever', 'higiene pessoal', 'Brilha e Reduz');
+
+-- stocks
+
+INSERT INTO stocks(id_product, id_supermarket, preco, quantidade)
+	VALUES (1, 1, 19.90, 5);
+
+INSERT INTO stocks(id_product, id_supermarket, preco, quantidade)
+	VALUES (2, 1, 7.99, 10);
+
+-- list_products
+
+INSERT INTO list_products(id_person, id_supermarket, items)
+	VALUES (2, 1, '{"(1, 2)", "(2, 3)"}');
+
+---------------------------------------------------------------------------------------
+
+-- SELECTs
+
+-- functions
+
+-- cria uma função para obter as propriedades de phone
+CREATE OR REPLACE FUNCTION users_phone_all() 
+    RETURNS SETOF phone AS 
+$$
+SELECT
+    telefone
+FROM
+    users
+$$
+language sql;
+
+-- cria uma função para obter as propriedades do address
+CREATE OR REPLACE FUNCTION users_address_all() 
+    RETURNS SETOF address AS 
+$$
+SELECT
+    endereco
+FROM
+    users
+$$
+language sql;
+
+-- recuperar os produtos das listas de compras
+CREATE OR REPLACE FUNCTION list_products() 
+    RETURNS SETOF item[] AS 
+$$
+SELECT
+    items
+FROM
+    list_products
+$$
+language sql;
+
+-- commands
+
+SELECT (telefone::phone).* from users;
+
+SELECT (endereco::address).* from users;
+
+SELECT (items::item[])[1].* from list_products;
+
+SELECT * FROM users_address_all();
+
+SELECT * FROM users_phone_all();
+
+SELECT i[1].* FROM list_products() i;
+
+--------------------------------------------------------------------------------------
+
+-- updates
+
+-- users
+
+UPDATE users SET telefone=('84', '99662-7589') WHERE (telefone::phone).ddd = '84';
+
+--------------------------------------------------------------------------------------
+
+-- deletes
+
+--users
+
+DELETE FROM list_products;
+
+DELETE FROM users WHERE (telefone::phone).ddd = '84';

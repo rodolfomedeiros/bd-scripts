@@ -1,0 +1,64 @@
+
+-- CREATE DATABASES
+
+curl -X PUT localhost:5984/books
+
+curl -X PUT localhost:5984/products
+
+-- INSERT
+
+curl -X PUT localhost:5984/books/9781593275846 -d @put1.json
+
+curl -X PUT localhost:5984/books/9781449331818 -d @put2.json
+
+curl -X PUT localhost:5984/books/9781449365035 -d @put3.json
+
+curl -X PUT localhost:5984/products/0001 -d '{"name": "Cheese", "price" : 2.50, "location": "Refrigerated foods"}'
+
+curl -X PUT localhost:5984/products/0002 -d '{"name": "Pizza", "price" : 4, "location": "Refrigerated foods"}'
+
+curl -X PUT localhost:5984/products/0003 -d '{"name": "Chocolate", "price" : 1.50, "location": "the Snack isle"}'
+
+-- SELECT
+
+-- select all databases
+curl -X GET localhost:5984/_all_dbs
+
+-- select all books
+curl -H "Content-Type: application/json" -X POST localhost:5984/books/_find -d '{"selector": {} }'
+
+-- select books by author
+curl -H "Content-Type: application/json" -X POST localhost:5984/books/_find -d '{ "selector": {"author": "Marijn Haverbeke"} }'
+
+-- select all products
+curl -H "Content-Type: application/json" -X POST localhost:5984/products/_find -d '{ "selector": {} }'
+
+-- select products by location
+curl -H "Content-Type: application/json" -X POST localhost:5984/products/_find -d '{ "selector": { "location": "Refrigerated foods" } }'
+
+-- UPDATE
+
+-- OBS: Para realizar a atulização de um documento
+-- é necessário o número da revisão atual
+
+-- update one book
+curl -X PUT localhost:5984/books/9781593275846 -d @update1.json
+
+-- update one product
+curl -X PUT localhost:5984/products/0002 -d @update2.json
+
+-- DELETE
+
+-- OBS: Para deletar o documento é necessário o id e rev atual.
+
+-- delete one book
+curl -X DELETE localhost:5984/books/{id}?rev={rev}
+
+-- delete one product
+curl -X DELETE localhost:5984/products/{id}?rev={rev}
+
+-- delete books bd
+curl -X DELETE localhost:5984/books
+
+-- delete products bd
+curl -X DELETE localhost:5984/products

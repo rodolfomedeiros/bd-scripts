@@ -1,0 +1,18 @@
+{
+    "musicas": {
+        "Keys": [
+            {
+                "artista": {"S": "Days Of The New"},
+                "nome": {"S": "Dirty Road"}
+            },
+            {
+                "artista": {"S": "Kings Of Leon"},
+                "nome": {"S": "Closer"}
+            },
+            {
+                "artista": {"S": "Civil Twilight"},
+                "nome": {"S": "Letters From The Sky"}
+            }
+        ]
+    }
+}

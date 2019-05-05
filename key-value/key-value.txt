@@ -1,0 +1,18 @@
+
+-- insert and update
+
+set id:person:2342353 "{'nome': 'Fulano 01', 'idade': '23'}"
+set id:preferences:8984839 "{'background': 'red', 'text-color': 'black', 'text-size': '16'}"
+set location "{'longitude': '-36.913954', 'latitude': '-5.583616'}" ex 30
+
+-- select
+
+get id:person:2342353
+
+-- select chaves
+
+keys *
+
+-- delete
+
+del id:person:2342353
